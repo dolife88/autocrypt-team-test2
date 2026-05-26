@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>나는 어떤 동물형 동료일까? | Autocrypt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blue: #0099FF;
+    --blue-dark: #0077CC;
+    --navy: #0A1628;
+    --navy2: #0F2040;
+    --navy3: #162850;
+    --text: #F0F4FF;
+    --text-muted: #8A9DC0;
+    --border: rgba(0,153,255,0.18);
+    --card-bg: rgba(15,32,64,0.85);
+    --radius: 16px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--navy);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,153,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,153,255,0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .glow {
+    position: fixed;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,153,255,0.08) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .glow-1 { top: -200px; left: -100px; }
+  .glow-2 { bottom: -200px; right: -100px; }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  /* ── SCREENS ── */
+  .screen { display: none; padding: 60px 0; }
+  .screen.active { display: block; animation: fadeUp 0.4s ease; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── INTRO ── */
+  .logo {
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    color: var(--blue);
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 48px;
+  }
+
+  .intro-animal { font-size: 72px; margin-bottom: 24px; line-height: 1; }
+
+  h1 {
+    font-size: clamp(22px, 5vw, 30px);
+    font-weight: 700;
+    line-height: 1.4;
+    margin-bottom: 16px;
+  }
+
+  .intro-sub {
+    font-size: 15px;
+    color: var(--text-muted);
+    line-height: 1.8;
+    margin-bottom: 36px;
+  }
+
+  .meta-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 40px;
+  }
+
+  .chip {
+    font-size: 12px;
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    color: var(--text-muted);
+  }
+
+  /* ── PROGRESS ── */
+  .progress-wrap {
+    margin-bottom: 36px;
+  }
+
+  .progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+
+  .progress-track {
+    height: 3px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 2px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--blue);
+    border-radius: 2px;
+    transition: width 0.5s cubic-bezier(.4,0,.2,1);
+  }
+
+  /* ── QUESTION ── */
+  .q-text {
+    font-size: clamp(16px, 3.5vw, 20px);
+    font-weight: 500;
+    line-height: 1.6;
+    margin-bottom: 28px;
+  }
+
+  .options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 32px; }
+
+  .opt {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    font-size: 15px;
+    color: var(--text);
+    cursor: pointer;
+    text-align: left;
+    line-height: 1.5;
+    transition: border-color 0.2s, background 0.2s, transform 0.1s;
+    font-family: 'Noto Sans KR', sans-serif;
+    width: 100%;
+  }
+
+  .opt:hover {
+    border-color: var(--blue);
+    background: rgba(0,153,255,0.08);
+    transform: translateX(4px);
+  }
+
+  .opt.selected {
+    border-color: var(--blue);
+    background: rgba(0,153,255,0.15);
+    color: #fff;
+  }
+
+  /* ── BUTTONS ── */
+  .btn-row { display: flex; justify-content: space-between; align-items: center; }
+
+  .btn {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 12px 24px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+  }
+
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+  .btn-ghost:hover { border-color: rgba(255,255,255,0.3); color: var(--text); }
+
+  .btn-primary {
+    background: var(--blue);
+    color: #fff;
+  }
+  .btn-primary:hover { background: var(--blue-dark); transform: translateY(-1px); }
+  .btn-primary:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+
+  .btn-large {
+    padding: 16px 40px;
+    font-size: 16px;
+    border-radius: 12px;
+  }
+
+  /* ── RESULT ── */
+  .result-hero {
+    text-align: center;
+    padding: 40px 0 32px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 28px;
+  }
+
+  .result-emoji { font-size: 80px; margin-bottom: 12px; }
+
+  .result-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--blue);
+    border: 1px solid var(--blue);
+    border-radius: 99px;
+    padding: 4px 14px;
+    margin-bottom: 12px;
+  }
+
+  .result-name {
+    font-size: clamp(22px, 5vw, 28px);
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+
+  .traits {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .trait {
+    font-size: 12px;
+    padding: 5px 14px;
+    background: rgba(0,153,255,0.12);
+    border: 1px solid rgba(0,153,255,0.25);
+    border-radius: 99px;
+    color: #7DCFFF;
+  }
+
+  .result-desc {
+    font-size: 15px;
+    color: var(--text-muted);
+    line-height: 1.8;
+    text-align: left;
+  }
+
+  .info-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    margin-bottom: 12px;
+  }
+
+  .info-card-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: 8px;
+  }
+
+  .info-card p {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.8;
+  }
+
+  /* score bars */
+  .score-section { margin-bottom: 28px; }
+  .score-section-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+  }
+
+  .score-row { margin-bottom: 14px; }
+  .score-row-top {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+  .score-row-top span:first-child { color: var(--text); }
+  .score-row-top span:last-child { color: var(--blue); font-weight: 500; }
+
+  .score-track {
+    height: 4px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 2px;
+  }
+  .score-bar {
+    height: 100%;
+    background: var(--blue);
+    border-radius: 2px;
+    width: 0;
+    transition: width 1.2s cubic-bezier(.4,0,.2,1);
+  }
+
+  /* share row */
+  .share-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 32px;
+  }
+
+  .share-row .btn { flex: 1; min-width: 140px; text-align: center; }
+
+  .result-footer {
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 20px;
+    padding-bottom: 40px;
+  }
+
+  /* toast */
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: #fff;
+    color: #0A1628;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 12px 24px;
+    border-radius: 99px;
+    transition: transform 0.3s ease;
+    z-index: 999;
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="glow glow-1"></div>
+<div class="glow glow-2"></div>
+
+<div class="container">
+
+  <!-- INTRO -->
+  <div class="screen active" id="screen-intro">
+    <div class="logo">Autocrypt × Culture Team</div>
+    <div class="intro-animal">🐾</div>
+    <h1>나는 어떤<br>동물형 동료일까?</h1>
+    <p class="intro-sub">일할 때의 자연스러운 나를 떠올리며<br>솔직하게 선택해 주세요. 정답은 없어요.</p>
+    <div class="meta-chips">
+      <span class="chip">📋 12문항</span>
+      <span class="chip">⏱ 약 3~5분</span>
+      <span class="chip">🔒 개인 결과만 표시</span>
+    </div>
+    <button class="btn btn-primary btn-large" onclick="startTest()">테스트 시작하기 →</button>
+  </div>
+
+  <!-- QUIZ -->
+  <div class="screen" id="screen-quiz">
+    <div class="progress-wrap">
+      <div class="progress-info">
+        <span id="q-label">질문 1 / 12</span>
+        <span id="q-pct">0%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="prog-fill" style="width:0%"></div>
+      </div>
+    </div>
+    <div class="q-text" id="q-text"></div>
+    <div class="options" id="q-opts"></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" id="btn-prev" onclick="prevQ()">← 이전</button>
+      <button class="btn btn-primary" id="btn-next" onclick="nextQ()" disabled>다음 →</button>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="screen" id="screen-result">
+    <div class="result-hero">
+      <div class="result-emoji" id="r-emoji"></div>
+      <div class="result-badge" id="r-badge"></div>
+      <div class="result-name" id="r-name"></div>
+      <div class="traits" id="r-traits"></div>
+      <p class="result-desc" id="r-desc"></p>
+    </div>
+
+    <div class="info-card">
+      <div class="info-card-label">💼 협업할 때 이런 모습이에요</div>
+      <p id="r-collab"></p>
+    </div>
+
+    <div class="info-card">
+      <div class="info-card-label">🌱 함께 일하면 더 좋아지는 포인트</div>
+      <p id="r-grow"></p>
+    </div>
+
+    <div class="score-section">
+      <div class="score-section-title">나의 업무 성향 분포</div>
+      <div id="r-scores"></div>
+    </div>
+
+    <div class="share-row">
+      <button class="btn btn-primary" onclick="copyResult()">결과 텍스트 복사</button>
+      <button class="btn btn-ghost" onclick="restartTest()">다시 하기</button>
+    </div>
+    <div class="result-footer">팀원 결과와 비교해보세요 🐾</div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast">복사됐어요!</div>
+
+<script>
+const questions = [
+  { text: "새 프로젝트가 시작될 때, 나는 보통...", opts: [
+    { text: "전체 그림부터 그리고, 방향을 잡으려 한다", dim: "vision", score: 3 },
+    { text: "각자 역할을 나누고 빠르게 실행에 들어간다", dim: "action", score: 3 },
+    { text: "팀원들과 충분히 이야기를 나누며 맞춰간다", dim: "harmony", score: 3 },
+    { text: "데이터와 사례를 먼저 찾아보며 준비한다", dim: "analysis", score: 3 }
+  ]},
+  { text: "회의에서 나는 주로...", opts: [
+    { text: "핵심 메시지를 정리해서 방향을 제시한다", dim: "vision", score: 2 },
+    { text: "결론을 빨리 내고 다음 액션을 정하자고 한다", dim: "action", score: 2 },
+    { text: "모두의 의견이 반영되고 있는지 살핀다", dim: "harmony", score: 2 },
+    { text: "근거나 데이터를 꼼꼼히 따져본다", dim: "analysis", score: 2 }
+  ]},
+  { text: "마감이 빡빡할 때, 나는...", opts: [
+    { text: "우선순위를 다시 정리하고 팀에 명확히 전달한다", dim: "vision", score: 2 },
+    { text: "일단 시작하고, 움직이면서 조정한다", dim: "action", score: 3 },
+    { text: "팀원들이 힘들지 않도록 챙기며 조율한다", dim: "harmony", score: 2 },
+    { text: "놓친 것 없는지 다시 한번 점검한다", dim: "analysis", score: 3 }
+  ]},
+  { text: "동료가 나에게 피드백을 요청했을 때, 나는...", opts: [
+    { text: "핵심만 짚어서 간결하게 말한다", dim: "vision", score: 2 },
+    { text: "좋은 점부터 말하고 개선점을 자연스럽게 전달한다", dim: "harmony", score: 2 },
+    { text: "문제점을 구체적으로, 솔직하게 이야기한다", dim: "action", score: 2 },
+    { text: "근거와 예시를 들어 논리적으로 설명한다", dim: "analysis", score: 2 }
+  ]},
+  { text: "팀 내 갈등이 생겼을 때, 나는...", opts: [
+    { text: "팀의 공동 목표를 다시 상기시키며 조율한다", dim: "vision", score: 2 },
+    { text: "빠르게 직접 대화로 해결하려 한다", dim: "action", score: 2 },
+    { text: "양쪽 이야기를 충분히 듣고 중재한다", dim: "harmony", score: 3 },
+    { text: "원인을 파악하고 재발 방지책을 생각한다", dim: "analysis", score: 2 }
+  ]},
+  { text: "새로운 도구나 업무 방식이 도입될 때, 나는...", opts: [
+    { text: "이게 팀 전체에 어떤 영향을 미칠지 먼저 생각한다", dim: "vision", score: 2 },
+    { text: "일단 써보면서 파악한다", dim: "action", score: 3 },
+    { text: "팀원들이 잘 적응할 수 있도록 도움을 주려 한다", dim: "harmony", score: 2 },
+    { text: "장단점을 꼼꼼하게 분석한 다음 결정한다", dim: "analysis", score: 3 }
+  ]},
+  { text: "내가 가장 에너지를 받는 순간은...", opts: [
+    { text: "큰 목표가 이뤄지는 걸 눈으로 확인할 때", dim: "vision", score: 3 },
+    { text: "할 일을 빠르게 처리하고 성과가 쌓일 때", dim: "action", score: 3 },
+    { text: "팀이 하나로 뭉쳐서 잘 돌아갈 때", dim: "harmony", score: 3 },
+    { text: "복잡한 문제를 논리적으로 풀어냈을 때", dim: "analysis", score: 3 }
+  ]},
+  { text: "혼자 일할 때 vs 함께 일할 때, 나는...", opts: [
+    { text: "혼자 생각하는 시간도 좋지만, 팀과 공유하는 걸 더 좋아한다", dim: "vision", score: 2 },
+    { text: "혼자 빠르게 처리하는 게 더 효율적이다", dim: "action", score: 2 },
+    { text: "함께할 때 더 즐겁고 힘이 난다", dim: "harmony", score: 3 },
+    { text: "혼자 집중해서 하는 편이 퀄리티가 높다", dim: "analysis", score: 2 }
+  ]},
+  { text: "업무 결과물의 품질과 속도 사이에서, 나는...", opts: [
+    { text: "방향만 맞으면 속도가 중요하다", dim: "vision", score: 2 },
+    { text: "일단 내고 빠르게 개선한다", dim: "action", score: 3 },
+    { text: "팀이 납득할 수 있는 수준이면 된다", dim: "harmony", score: 2 },
+    { text: "충분한 검토 후 완성도 높게 낸다", dim: "analysis", score: 3 }
+  ]},
+  { text: "동료가 실수했을 때, 나는...", opts: [
+    { text: "왜 그런 일이 생겼는지 구조적으로 살핀다", dim: "vision", score: 2 },
+    { text: "빨리 수습하고 다음으로 넘어간다", dim: "action", score: 2 },
+    { text: "먼저 걱정해주고, 어떻게 도울지 생각한다", dim: "harmony", score: 3 },
+    { text: "원인 분석과 재발 방지가 먼저다", dim: "analysis", score: 3 }
+  ]},
+  { text: "나에게 가장 잘 맞는 업무 환경은...", opts: [
+    { text: "큰 그림을 그리고 전략적으로 움직일 수 있는 곳", dim: "vision", score: 3 },
+    { text: "빠르게 결정하고 실행할 수 있는 곳", dim: "action", score: 3 },
+    { text: "서로 배려하고 소통이 잘 되는 곳", dim: "harmony", score: 3 },
+    { text: "체계적이고 논리적으로 일할 수 있는 곳", dim: "analysis", score: 3 }
+  ]},
+  { text: "이 중에서 나의 단점에 가장 가까운 것은?", opts: [
+    { text: "현실적인 실행보다 방향 이야기에 머물 때가 있다", dim: "vision", score: 2 },
+    { text: "급하게 진행하다 놓치는 게 생길 때가 있다", dim: "action", score: 2 },
+    { text: "갈등을 피하느라 중요한 말을 못할 때가 있다", dim: "harmony", score: 2 },
+    { text: "너무 따지다 결정이 늦어질 때가 있다", dim: "analysis", score: 2 }
+  ]}
+];
+
+const types = {
+  vision: {
+    emoji: "🦅",
+    badge: "비전형",
+    name: "독수리 (Eagle)",
+    traits: ["전략적", "방향 제시", "큰 그림"],
+    desc: "팀이 어디로 가야 하는지 늘 생각하는 사람이에요. 전체적인 맥락을 보고 의미 있는 방향을 제시하는 데 탁월합니다. 멀리 보는 눈과 핵심을 꿰뚫는 직관이 강점이에요.",
+    collab: "목표와 방향을 명확히 해주는 역할을 자연스럽게 맡아요. 팀이 길을 잃을 때 나침반이 되어줍니다. 전략 회의나 방향 설정 단계에서 빛을 발해요.",
+    grow: "큰 그림에서 내려와 구체적인 실행까지 함께 챙기면 더욱 강력해질 수 있어요. 팀원들이 어떻게 실천할지 함께 고민하는 시간을 가져보세요."
+  },
+  action: {
+    emoji: "🐆",
+    badge: "실행형",
+    name: "치타 (Cheetah)",
+    traits: ["추진력", "빠른 실행", "결단력"],
+    desc: "생각보다 행동이 먼저인 타입이에요. 빠른 판단과 강한 실행력으로 팀에 추진력을 불어넣습니다. 불확실한 상황에서도 두려움 없이 앞으로 나아가는 게 강점이에요.",
+    collab: "정체된 상황을 움직이게 만드는 원동력이에요. '일단 해봐요'가 팀에 활력을 주고, 누군가 망설일 때 첫 발을 내딛어 줍니다.",
+    grow: "빠른 실행이 강점이지만, 팀과 충분히 맞추는 시간도 중요해요. 속도만큼 방향 정렬도 함께 챙겨보세요."
+  },
+  harmony: {
+    emoji: "🐬",
+    badge: "조화형",
+    name: "돌고래 (Dolphin)",
+    traits: ["공감 능력", "팀 결속", "소통"],
+    desc: "사람을 먼저 생각하는 따뜻한 동료예요. 팀의 분위기를 읽고 갈등을 부드럽게 해소하며, 모두가 함께 나아갈 수 있도록 보이지 않는 곳에서 힘을 씁니다.",
+    collab: "팀이 하나가 될 수 있도록 연결해주는 역할을 해요. 어려운 대화를 편안하게 만들고, 아무도 소외되지 않도록 챙깁니다.",
+    grow: "내 의견도 팀에 중요해요. 갈등을 피하기보다 때로는 솔직하게 말하는 것도 팀을 위한 배려라는 걸 기억해 주세요."
+  },
+  analysis: {
+    emoji: "🦉",
+    badge: "분석형",
+    name: "부엉이 (Owl)",
+    traits: ["논리적", "꼼꼼함", "문제 해결"],
+    desc: "데이터와 논리를 기반으로 판단하는 타입이에요. 복잡한 문제를 체계적으로 분해하고, 놓치기 쉬운 부분까지 꼼꼼히 살핍니다. 팀의 품질 관리자 역할을 자연스럽게 맡아요.",
+    collab: "팀이 놓칠 수 있는 리스크를 잡아주고, 논리적 근거로 의사결정을 단단하게 만들어줍니다. 보고서, 기획서, 검토 단계에서 특히 빛나요.",
+    grow: "완벽한 준비도 좋지만, 어느 정도에서 결정하고 실행하는 연습도 필요해요. '충분히 좋은 것'으로도 시작할 수 있어요."
+  }
+};
+
+const dimLabels = {
+  vision:   "🦅 방향·전략",
+  action:   "🐆 실행·추진",
+  harmony:  "🐬 관계·조화",
+  analysis: "🦉 분석·논리"
+};
+
+let answers = new Array(questions.length).fill(null);
+let current = 0;
+
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function startTest() {
+  answers = new Array(questions.length).fill(null);
+  current = 0;
+  show('screen-quiz');
+  renderQ();
+}
+
+function renderQ() {
+  const q = questions[current];
+  const total = questions.length;
+  const pct = Math.round((current / total) * 100);
+
+  document.getElementById('q-label').textContent = `질문 ${current + 1} / ${total}`;
+  document.getElementById('q-pct').textContent = `${pct}%`;
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('q-text').textContent = q.text;
+
+  const optsEl = document.getElementById('q-opts');
+  optsEl.innerHTML = '';
+  q.opts.forEach((o, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt' + (answers[current] === i ? ' selected' : '');
+    btn.textContent = o.text;
+    btn.onclick = () => selectOpt(i);
+    optsEl.appendChild(btn);
+  });
+
+  document.getElementById('btn-prev').style.visibility = current === 0 ? 'hidden' : 'visible';
+  const nextBtn = document.getElementById('btn-next');
+  nextBtn.disabled = answers[current] === null;
+  nextBtn.textContent = current === total - 1 ? '결과 보기 →' : '다음 →';
+}
+
+function selectOpt(i) {
+  answers[current] = i;
+  document.querySelectorAll('.opt').forEach((b, idx) => b.classList.toggle('selected', idx === i));
+  document.getElementById('btn-next').disabled = false;
+}
+
+function nextQ() {
+  if (answers[current] === null) return;
+  if (current < questions.length - 1) { current++; renderQ(); }
+  else showResult();
+}
+
+function prevQ() {
+  if (current > 0) { current--; renderQ(); }
+}
+
+function showResult() {
+  const scores = { vision: 0, action: 0, harmony: 0, analysis: 0 };
+  answers.forEach((a, qi) => {
+    if (a !== null) {
+      const o = questions[qi].opts[a];
+      scores[o.dim] += o.score;
+    }
+  });
+
+  const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+  const topDim = sorted[0][0];
+  const t = types[topDim];
+  const total = Object.values(scores).reduce((a, b) => a + b, 0);
+
+  document.getElementById('r-emoji').textContent = t.emoji;
+  document.getElementById('r-badge').textContent = t.badge;
+  document.getElementById('r-name').textContent = t.name;
+  document.getElementById('r-desc').textContent = t.desc;
+  document.getElementById('r-collab').textContent = t.collab;
+  document.getElementById('r-grow').textContent = t.grow;
+  document.getElementById('r-traits').innerHTML = t.traits.map(tr => `<span class="trait">${tr}</span>`).join('');
+
+  const scoresEl = document.getElementById('r-scores');
+  scoresEl.innerHTML = sorted.map(([dim, val]) => {
+    const pct = Math.round((val / total) * 100);
+    return `<div class="score-row">
+      <div class="score-row-top"><span>${dimLabels[dim]}</span><span>${pct}%</span></div>
+      <div class="score-track"><div class="score-bar" data-pct="${pct}"></div></div>
+    </div>`;
+  }).join('');
+
+  show('screen-result');
+
+  setTimeout(() => {
+    document.querySelectorAll('.score-bar').forEach(bar => {
+      bar.style.width = bar.dataset.pct + '%';
+    });
+  }, 100);
+
+  // store result for copy
+  window._resultText = `🐾 아우토크립트 동물형 동료 테스트 결과\n\n${t.emoji} ${t.name} (${t.badge})\n${t.traits.join(' · ')}\n\n${t.desc}\n\n💼 ${t.collab}\n🌱 ${t.grow}\n\n📊 성향 분포\n${sorted.map(([d, v]) => `${dimLabels[d]}: ${Math.round((v/total)*100)}%`).join('\n')}`;
+}
+
+function copyResult() {
+  navigator.clipboard.writeText(window._resultText || '').then(() => {
+    showToast('결과가 복사됐어요! 팀 채널에 공유해보세요 🐾');
+  }).catch(() => {
+    showToast('복사에 실패했어요. 텍스트를 직접 선택해 주세요.');
+  });
+}
+
+function restartTest() {
+  answers = new Array(questions.length).fill(null);
+  current = 0;
+  show('screen-intro');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
